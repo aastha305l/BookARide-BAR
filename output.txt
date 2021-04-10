@@ -1,0 +1,2 @@
+fname	lname	fingers
+John	NULL	NULL
