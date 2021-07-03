@@ -1,0 +1,257 @@
+<!--File: foundDriver.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Found Driver</title>
+    
+    <style>
+      #review {
+          display: none;
+      }
+
+      #timeToDest {
+          display: none;
+      }
+      /*
+      #star-five {
+      margin: 50px 0;
+      position: relative;
+      display: block;
+      color: red;
+      width: 0px;
+      height: 0px;
+      border-right: 100px solid transparent;
+      border-bottom: 70px solid red;
+      border-left: 100px solid transparent;
+      transform: rotate(35deg);
+    }
+      #star-five:before {
+      border-bottom: 80px solid red;
+      border-left: 30px solid transparent;
+      border-right: 30px solid transparent;
+      position: absolute;
+      height: 0;
+      width: 0;
+      top: 0px;
+      left: 0px;
+      display: block;
+      content: '';
+      transform: rotate(-35deg);
+    }
+    #star-five:after {
+      position: absolute;
+      display: block;
+      color: red;
+      top: 3px;
+      left: -105px;
+      width: 0px;
+      height: 0px;
+      border-right: 100px solid transparent;
+      border-bottom: 70px solid red;
+      border-left: 100px solid transparent;
+      transform: rotate(-70deg);
+      content: '';
+    }
+*/
+    </style>
+    <script>
+      var duration = 0;
+      var diff = -1;
+      var destTime = 0;
+      var diff2 = -1;
+      
+      function setTime(time, d) {
+          this.duration = 2//time; //change to time
+          this.destTime = 5//d; //change to d
+      };
+      setTime({{time | tojson | safe}}, {{destTime | tojson | safe}});
+      function changeDest()
+      {
+          document.getElementById("timeToDestChanged").innerHTML = "Arrived at your destination!";
+          document.getElementById("review").style.display = "block";
+      }
+
+      function changeTimer2(display)
+      {
+          var start = Date.now(),
+              days = 0,
+              hours = 0,
+              minutes,
+              seconds;
+          function timer2() {
+              // get the number of seconds that have elapsed since 
+              // startTimer() was called
+              diff2 = destTime - (((Date.now() - start) / 1000) | 0);
+
+              if (diff2 === 0)
+              {
+                  changeDest();
+              }
+              // does the same job as parseInt truncates the float
+              minutes = (diff2 / 60) | 0;
+              if (minutes > 59)
+              {
+                  hours = (minutes / 60) | 0;
+                  minutes = (minutes % 60) | 0;
+              }
+              if (hours > 24)
+              {
+                  days = (hours / 24) | 0;
+                  hours = (hours % 24) | 0;
+              }
+              seconds = (diff2 % 60) | 0;
+
+              var t = ""
+              if (days > 0)
+              {
+                  t = days < 10 ? t + "0" + days : t + days;
+                  t = days == 1 ? t + " day " : t + " days ";
+              }
+              if (hours > 0)
+              {
+                  t = hours < 10 ? t + "0" + hours : t + hours;
+                  t = hours == 1 ? t + " hour " : t + " hours ";
+              }
+              if (minutes > 0)
+              {
+                  t = minutes < 10 ? t + "0" + minutes : t + minutes;
+                  t = minutes == 1 ? t + " minute " : t + " minutes "
+              }
+              if (seconds > 0)
+              {
+                  t = seconds < 10 ? t + "0" + seconds : t + seconds;
+                  t = seconds == 1 ? t + " second" : t + " seconds";
+              }
+              
+              display.textContent = t; 
+          }
+          // we don't want to wait a full second before the timer starts
+          timer2();
+          setInterval(timer2, 1000);
+      };
+
+      function changeDriver()
+      {
+          document.getElementById("timeLeft").innerHTML = "Driver Arrived! Look for your driver now.";
+          document.getElementById("timeToDest").style.display = "block";
+          document.getElementById("timeToDest").id = "timeToDestChanged";
+          
+          if (document.getElementById("timeToDestChanged") != null) {
+              console.log("comes here");
+              display = document.querySelector('#time2');
+              changeTimer2(display);
+          }
+      }
+
+      //for the first timer
+      function changeTimer(display)
+      {
+          var start = Date.now(),
+              days = 0,
+              hours = 0,
+              minutes,
+              seconds;
+          function timer() {
+              // get the number of seconds that have elapsed since 
+              // startTimer() was called
+              diff = duration - (((Date.now() - start) / 1000) | 0);
+
+              if (diff === 0)
+              {
+                  changeDriver();
+              }
+              // does the same job as parseInt truncates the float
+              minutes = (diff / 60) | 0;
+              if (minutes > 59)
+              {
+                  hours = (minutes / 60) | 0;
+                  minutes = (minutes % 60) | 0;
+              }
+              if (hours > 24)
+              {
+                  days = (hours / 24) | 0;
+                  hours = (hours % 24) | 0;
+              }
+              seconds = (diff % 60) | 0;
+
+              var t = ""
+              if (days > 0)
+              {
+                  t = days < 10 ? t + "0" + days : t + days;
+                  t = days == 1 ? t + " day " : t + " days ";
+              }
+              if (hours > 0)
+              {
+                  t = hours < 10 ? t + "0" + hours : t + hours;
+                  t = hours == 1 ? t + " hour " : t + " hours ";
+              }
+              if (minutes > 0)
+              {
+                  t = minutes < 10 ? t + "0" + minutes : t + minutes;
+                  t = minutes == 1 ? t + " minute " : t + " minutes "
+              }
+              if (seconds > 0)
+              {
+                  t = seconds < 10 ? t + "0" + seconds : t + seconds;
+                  t = seconds == 1 ? t + " second" : t + " seconds";
+              }
+              
+              display.textContent = t; 
+          }
+          // we don't want to wait a full second before the timer starts
+          timer();
+          setInterval(timer, 1000);
+      };
+
+      window.onload = function() {
+          var display = document.querySelector('#time');
+          changeTimer(display);
+      };
+
+      function star(clicked)
+      {
+          document.getElementById("r").value = clicked;
+          console.log(document.getElementById("r").value);
+          console.log(document.getElementById("r").value);
+          for (let i = 0; i < 5; i++)
+          {
+              if (i < clicked) document.getElementsByName("rating")[i].checked = true;
+              else document.getElementsByName("rating")[i].checked = false;
+          }
+      }
+    </script>
+  </head>
+  <body>
+    <div id = "timeFromDriver">
+      <p id = "timeLeft">Time left until driver's arrival: <span id = "time"></span></p>
+    </div>
+    <div id = "driverInfo">
+      <p>Cost of the ride: ${{cost}}</p>
+      <p>Name: {{name}}</p>
+      <p>Location: {{location}}</p>
+      <p>Reviews: {{review}}</p>
+      <p>RidesCompleted: {{ridesCompleted}}</p>
+      <p>Car color: {{carColor}}</p>
+      <p>License Number: {{licenseNumber}}</p>
+      <p>Car Model: {{carModel}}</p>
+    </div>
+    <div id = "timeToDest">
+      <p id = "timeDest">Time left until destination: <span id = "time2"></spam></p>
+    </div>
+    <div id = "review">
+      <p>Rate the driver:</p>
+      <form action="/riderHomePage/reviewed" method="Post">
+        <input type="hidden" name="r" id="r" value="5"/>
+        <input type="checkbox" name="rating" value="1" id = "star-five" onClick="star(1)" checked />
+        <input type="checkbox" name="rating" value="2" id = "star-five" onClick="star(2)" checked />
+        <input type="checkbox" name="rating" value="3" id = "star-five" onClick="star(3)" checked />
+        <input type="checkbox" name="rating" value="4" id = "star-five" onClick="star(4)" checked />
+        <input type="checkbox" name="rating" value="5" id = "star-five" onClick="star(5)" checked />
+        <p><input type="submit" name="rate" value="Rate" /></p>
+      </form>
+
+      
+    </div>
+  </body>
+</html>

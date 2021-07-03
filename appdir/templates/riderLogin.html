@@ -1,0 +1,31 @@
+<!--Name: Aastha Lamichhane-->
+<!--File: login.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page</title>
+  </head>
+  <body>
+    <form action="/riderLogin" method="POST">
+      <p>
+        <label for = "email">Email address: </label>
+        <input type = "email" id = "email" name = "email" placeholder = "Email" required />
+      </p>
+      <p>
+        <label for = "password">Password: </label>
+        <input type = "password" id = "password" name = "password" placeholder = "Password" required />
+      </p>
+      <p>
+        <label for = "login"/>
+        <input type = "submit" id = "login" name = "login" value = "Log in" />
+      </p>
+    </form>
+    <form action="/riderSignup" method="GET">
+      <p>
+        <label for = "signup" />
+        <input type = "submit" id = "signup" name = "signup" value = "Sign up" />
+      </p>
+    </form>
+  </body>
+</html>

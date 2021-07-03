@@ -1,0 +1,346 @@
+<!--File: searching.html -->
+
+<!--ToDo
+    --need to change the background image. II think dont keep it or may be hide it after the button says found driver.
+      --need to send the locations as well.
+        --need to find the distance from the driver to the rider.
+          --and from the rider to the destination. 
+    -->
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Searching for Drivers</title>
+    <style>
+      body {
+          /*background-image: url("/static/Searching.gif");
+          background-attachment: fixed;
+          background-size: cover;
+          display: block;
+*/
+      }
+
+      #map {
+          height: 500px;
+          width: 60%;
+          float: right
+      }
+
+      #found {
+          display: none;
+      }
+      
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+    <script>
+      var nearestDriverId = -1;
+      var nearestDriverDist = -1;
+      var object;
+      var fromLocation, toLocation;
+      var fLat = -1, fLng = -1, tLat = -1, tLng = -1;
+      var timeToDestination = -1;
+      
+      function setVariables(o, f, t) {
+          this.object = o;
+          this.fromLocation = f;
+          this.toLocation = t;
+      }
+
+      function findDistance(originLat, originLng, destLat, destLng, id, callback) {
+          const bounds = new google.maps.LatLngBounds();
+          const markersArray = [];
+          const origin = {lat: originLat, lng: originLng };
+          const destination = {lat: destLat, lng: destLng };
+          const destinationIcon = "https://chart.googleapis.com/chart?" + "chst=d_map_pin_letter&chld=D|FF0000|000000";
+          const originIcon = "https://chart.googleapis.com/chart?" + "chst=d_map_pin_letter&chld=O|FFFF00|000000";
+          
+          const map = new google.maps.Map(document.getElementById("map"), {
+              center: { lat: destLat, lng: destLng },
+              zoom: 25,
+          });
+          
+          const geocoder = new google.maps.Geocoder();
+          const service = new google.maps.DistanceMatrixService();
+          
+          console.log("From here", origin, destination);
+          
+          service.getDistanceMatrix(
+              {
+                  origins: [origin],
+                  destinations: [destination],
+                  travelMode: google.maps.TravelMode.DRIVING,
+                  unitSystem: google.maps.UnitSystem.METRIC,
+                  avoidHighways: false,
+                  avoidTolls: false,
+              },
+              (response, status) => {
+                  if (status !== "OK") {
+                      console.log("Error was: " + status);
+                  } else {
+                      const originList = response.originAddresses;
+                      const destinationList = response.destinationAddresses;
+                      console.log(originList, destinationList, id);
+                      deleteMarkers(markersArray);
+                      const showGeocodedAddressOnMap = function (asDestination) {
+                          const icon = asDestination ? destinationIcon : originIcon;
+                          return function (results, status) {
+                              if (status === "OK") {
+                                  map.fitBounds(bounds.extend(results[0].geometry.location));
+                                  
+                                  markersArray.push(new google.maps.Marker({map, position: results[0].geometry.location, icon: icon, }));
+                              } else {
+                                  console.log("Geocode was not successful due to: " + status);
+                              }};
+                      };
+                      var results = response.rows[0].elements;
+                      for (let i = 0; i < originList.length; i++) {
+                          results = response.rows[i].elements;
+                          geocoder.geocode({ address: originList[i] }, showGeocodedAddressOnMap(false));
+
+                          for (let j = 0; j < results.length; j++) {
+                              geocoder.geocode({ address: destinationList[j] }, showGeocodedAddressOnMap(true));
+                          }
+                      }
+                      console.log("Results: ", results[0]);
+                      callback(results[0], id);
+                  }
+              });
+      }
+
+      function deleteMarkers(markersArray) {
+          for (let i = 0; i < markersArray.length; i++) {
+              markersArray[i].setMap(null);
+          }
+          markersArray = [];
+      }
+
+
+      function convertToSeconds(duration, callback) {
+          var days = 0;
+          var hours = 0;
+          var min = 0;
+          var sec = 0;
+          var splittedString = duration.split(" ");
+          var totaltime = 0;
+          for (let i = splittedString.length - 1; i >= 0; i = i - 2)
+          {
+              var temp = splittedString[i].toLowerCase();
+              if (temp === "seconds" || temp === "second" || temp === "sec")
+              {
+                  totaltime = totaltime + parseInt(splittedString[i - 1]);
+              } else if (temp === "minutes" || temp === "minute" || temp === "min" || temp === "mins")
+              {
+                  totaltime = totaltime + parseInt(splittedString[i - 1]) * 60;
+              } else if (temp === "hours" || temp === "hour" || temp === "hr" || temp === "hrs")
+              {
+                  totaltime = totaltime + parseInt(splittedString[i - 1]) * 60 * 60;
+              } else if (temp === "days" || temp === "day")
+              {
+                  totaltime = totaltime + parseInt(splittedString[i - 1]) * 24 * 60 * 60;
+              }
+          }
+          callback(totaltime);
+      }
+      
+      async function findDriver() {
+          const geocoder = new google.maps.Geocoder();
+          for (var key in object){
+              console.log("Key: ", key, object[key])
+              for (var [k, value] of Object.entries(object[key])){
+                  if (k === "location"){
+                      var o = value;
+                      var d = this.fromLocation;
+                      var id = object[key]["id"]
+                      var olat = 1.0;
+                      var olng = 1.0;
+                      var dlat = 1.0;
+                      var dlng = 1.0;
+                      console.log("O, d: ", o, d);
+
+
+                      await geocoder.geocode({address: o},  function(resultsO, status) {
+                          if (status === "OK") {
+                              olat = resultsO[0].geometry.location.lat();
+                              olng = resultsO[0].geometry.location.lng();
+                          } else {
+                              console.log("Request failed " + status);
+                          }
+                      })
+
+                      await geocoder.geocode({address: d}, function(resultsD, status) {
+                          if (status === "OK") {
+                              dlat = resultsD[0].geometry.location.lat();
+                              dlng = resultsD[0].geometry.location.lng();
+                              this.fLat = dlat;
+                              this.fLng = dlng;
+                          } else {
+                              console.log("Request failed " + status);
+                          }
+                      })
+
+                      
+                      await findDistance(olat, olng, dlat, dlng, id, function(results, id) {
+                          if (results) {
+                              convertToSeconds(results["duration"]["text"], function(totaltime) {
+                                  if (totaltime)
+                                  {
+                                      console.log("Time: ", totaltime, o, d);
+                                      if (nearestDriverDist < 0 || nearestDriverDist > totaltime) {
+                                          this.nearestDriverDist = totaltime;
+                                          console.log("findDriver, id: ", object[key]["id"], id)
+                                          this.nearestDriverId = id
+                                      }
+                                  }
+                                  else
+                                  {
+                                      alert("Failure: " + status);
+                                  }});
+                              
+                          } else {
+                              console.log("Failed: ", results)
+                          }
+                      });  
+
+                      /*
+                      geocoder.geocode({address: o},  function(resultsO, status) {
+                          if (status === "OK") {
+                              olat = resultsO[0].geometry.location.lat();
+                              olng = resultsO[0].geometry.location.lng();
+                              geocoder.geocode({address: d}, function(resultsD, status) {
+                                  if (status === "OK") {
+                                      dlat = resultsD[0].geometry.location.lat();
+                                      dlng = resultsD[0].geometry.location.lng();
+                                      this.fLat = dlat;
+                                      this.fLng = dlng;
+                                      
+                                      findDistance(olat, olng, dlat, dlng, function(results) {
+                                          if (results) {
+                                              convertToSeconds(results["duration"]["text"], function(totaltime) {
+                                                  if (totaltime)
+                                                  {
+                                                      console.log("Check: " ,o, d, this.nearestDriverDist, totaltime, this.nearestDriverDist > totaltime);
+                                                      if (this.nearestDriverDist < 0 || this.nearestDriverDist > totaltime) {
+                                                          this.nearestDriverDist = totaltime;
+                                                          this.nearestDriverId = object[key]["id"];
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+                                                      alert("Failure: " + status);
+                                                  }});
+                                              
+                                          } else {
+                                              console.log("Failed: ", results)
+                                          }
+                                      });
+                                  } else {
+                                      console.log("Request failed " + status);
+                                  }
+                              });
+                          } else {
+                              console.log("Request failed " + status);
+                          }
+                      });
+                      */
+                  }
+              }
+          }
+      }
+
+      function changeHTML()
+      {
+          document.getElementById("found").style.display = "block";
+          if (this.nearestDriverDist > 0) {
+              const geocoder = new google.maps.Geocoder();
+              geocoder.geocode({address: this.toLocation},  function(resultsT, status) {
+                          if (status === "OK") {
+                              this.tLat = resultsT[0].geometry.location.lat();
+                              this.tLng = resultsT[0].geometry.location.lng();
+                              findDistance(this.fLat, this.fLng, this.tLat, this.tLng, 1, function(result, id) {
+                                  if (result)
+                                  {
+                                      convertToSeconds(result['duration']['text'], function(timeToDest) {
+                                          if (timeToDest)
+                                          {
+                                              this.timeToDestination = timeToDest;
+                                              document.getElementById("timeToDest").value = this.timeToDestination;
+                                              console.log("changehtml:", document.getElementById("timeToDest").value)
+                                          }
+                                      })
+                                  }
+                              });
+                          }
+              });
+              //document.getElementById("driverFound").value = "Driver Found";
+              document.getElementById("driverFound").type = "hidden";
+              document.getElementById("driverDist").value = this.nearestDriverDist;
+              document.getElementById("driverId").value = this.nearestDriverId;
+              console.log(document.getElementById("driverId").value, this.nearestDriverId);
+              document.getElementById("submit").type = "submit";
+              
+              console.log("Okay: ", this.nearestDriverDist, this.nearestDriverId);
+          }
+      }
+
+      /*
+      function includeHTML() {
+          var z, i, elmnt, file, xhttp;
+          // Loop through a collection of all HTML elements: 
+          z = document.getElementsByTagName("*");
+          for (i = 0; i < z.length; i++) {
+              elmnt = z[i];
+              //search for elements with a certain atrribute:
+              file = elmnt.getAttribute("w3-include-html");
+              if (file) {
+                  // Make an HTTP request using the attribute value as the file name:
+                  xhttp = new XMLHttpRequest();
+                  xhttp.onreadystatechange = function() {
+                      if (this.readyState == 4) {
+                          if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+                          if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+                          // Remove the attribute, and call this function once more:
+                          elmnt.removeAttribute("w3-include-html");
+                          includeHTML();
+                      }
+                  }
+                  xhttp.open("GET", file, true);
+                  xhttp.send();
+                  // Exit the function:
+                  return;
+              }
+          }
+      }
+      */
+
+    </script>
+
+    
+  </head>
+  <body>
+    <!--
+    <div w3-include-html="navigation.html"></div>
+    <script>includeHTML()</script>-->
+    <div id = "map">
+    </div>
+    <script>setVariables({{user | tojson | safe}}, {{fromLocation | tojson | safe}}, {{toLocation | tojson | safe}})</script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfrpdsblUBlQWcsXg2EBPIv3yF7qPHKUA&callback=findDriver&libraries=&v=weekly"></script>
+    
+    
+    <div id = "found">
+      <form action = "/riderHomePage/driverFound", method = "POST">
+        <input type = "hidden" id = "driverDist" name = "driverDist" value = "" />
+        <input type = "hidden" id = "driverId" name = "driverId" value = "" />
+        <input type = "hidden" id = "timeToDest" name = "timeToDest" value = "" />
+        <p><input type = "button" id = "driverFound" name = "driverFound" value = "Search for a Ride" onClick = "changeHTML()"></input></p>
+        <p><input type = "hidden" id = "submit" name = "bookARide" value = "Book A Ride" /></p>
+      </form>
+    </div>
+    <script>changeHTML()</script>
+
+    <!--
+    findDriver({{user | tojson | safe}})
+    findDriver(JSON.parse('{{user | tojson | safe}}'))
+    -->
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!--Name: Aastha Lamichhane -->
+<!--File: riderHomePage.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rider Home Page</title>
+    <!--<link rel="stylesheet" href="../../style.css" />-->
+    <style>
+      .container {
+          display: inline-block;
+          cursor: pointer;
+          padding: 30px 8px 8px 20px;
+      }
+      
+      .container-change {
+          padding: 30px 8px 8px 0px;
+          text-decoration: none;
+          font-size: 25px;
+          color: #818181;
+          display: inline-block;
+          transition: 0.3s;
+      }
+
+      .bar1, .bar2, .bar3 {
+          width: 35px;
+          height: 5px;
+          background-color: #333;
+          margin: 6px 0px;
+          transition: 0.4s;
+      }
+
+      .change .bar1 {
+          -webkit-transform: rotate(-45deg) translate(-9px, 6px);
+          transform: rotate(-45deg) translate(-9px, 6px);
+      }
+
+      .change .bar2 {opacity: 0;}
+
+      .change .bar3 {
+          -webkit-transform: rotate(45deg) translate(-8px, -8px);
+          transform: rotate(45deg) translate(-8px, -8px);
+      }
+
+      .left {
+          float: right;
+          padding: 5px;
+      }
+
+      #map {
+          height: 500px;
+          /* The height is 400 pixels */
+          width: 60%;
+          /* The width is the width of the web page */
+          float: right;
+      }
+
+      .sidenav {
+          height: 100%; /* 100% Full-height */
+          width: 0; /* 0 width - change this with JavaScript */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Stay on top */
+          top: 0; /* Stay at the top */
+          left: 0;
+          background-color: #111; /* Black*/
+          overflow-x: hidden; /* Disable horizontal scroll */
+          transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+      }
+
+      /* The navigation menu links */
+      .sidenav a {
+          padding: 8px 8px 8px 32px;
+          text-decoration: none;
+          font-size: 25px;
+          color: #818181;
+          display: block;
+          transition: 0.3s;
+      }
+
+      /* When you mouse over the navigation links, change their color */
+      .sidenav a:hover {
+          color: #f1f1f1;
+      }
+
+      
+
+      /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+      #main {
+          transition: margin-left .5s;
+          padding: 20px;
+      }
+
+      /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+      @media screen and (max-height: 450px) {
+          .sidenav {padding-top: 15px;}
+          .sidenav a {font-size: 18px;}
+      }
+
+    </style>
+    
+    <script>
+      function myFunction(x) {
+          x.classList.toggle("change")
+      }
+
+      function initMap() {
+          const uluru = { lat: 38.9517, lng: -92.3341 };
+          const map = new google.maps.Map(document.getElementById("map"), {zoom: 4, center: uluru,});
+          const marker = new google.maps.Marker({position: uluru, map: map,});
+      }
+
+      function openNav() {
+          document.getElementById("mySidenav").style.width = "250px";
+          document.getElementById("main").style.marginLeft = "250px";
+      }
+
+      /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+      function closeNav() {
+          document.getElementById("mySidenav").style.width = "0";
+          document.getElementById("main").style.marginLeft = "0";
+      }
+    </script>
+  </head>
+  
+  <body>
+    
+    <div id="mySidenav" class="sidenav">
+      <a href="javascript:void(0)" onclick="closeNav()">
+        <div class="container-change">
+          <div class="change">
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3"></div>
+          </div>
+        </div>
+      </a>
+      <a href="#">Messages</a>
+      <a href="#">Trip History</a>
+      <a href="#">Your Wallet</a>
+      <a href="#">Rewards</a>
+      <a href="#">Settings</a>
+      <a href="#">Help</a>
+    </div>
+    <span onclick="openNav()">
+      <div class="container">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </div>
+    </span>
+
+    <img class="left" src="static/BookAR.png" width="100" height="100" alt="Logo of BookARide">
+
+
+    <div id = "main">
+      
+      
+      <form action='/riderHomePage/findDrivers' method="POST">
+        <p>
+          <label for = "from" />
+          <input type = "search" id = "from" name = "from" placeholder = "From" value ="" required/>
+        </p>
+        <p>
+          <label for = "to" />
+          <input type = "search" id = "from" name = "to" placeholder = "To" value = "" required/>
+        </p>
+        <p>
+          <label for = "requestNow" />
+          <input type = "submit" id = "requestNow" name = "findDrivers" value = "Request Now"/>
+          <label for = "schedule" />
+          <input type = "submit" id = "schedule" name = "findDrivers" value = "Schedule"/>
+        </p>
+      </form>
+      <div id="map">
+        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWqYBWQqpJ5eaX_ESd26Ovx21hizd1uIU&callback=initMap&libraries=&v=weekly" async ></script>
+      </div>
+    </div>
+  </body>
+</html>
